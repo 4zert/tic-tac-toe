@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic-Tac-Toe Game</title>
+    <style>
+      body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .game {
+            position: relative;
+            display: inline-block;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .cell {
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cell:hover {
+            background-color: #ccc;
+        }
+
+        .cell.winner {
+            background-color: #b2efab;
+        }
+
+        .message {
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .player-names {
+            margin-top: 30px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 200px;
+        }
+
+        .start-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .start-button:hover {
+            background-color: #555;
+        }
+
+        .game-over-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-over-message {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .restart-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .restart-button:hover {
+            background-color: #555;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .board.animation {
+            animation: scaleIn 0.5s ease;
+        }
+
+        .game-over-overlay.animation {
+            animation: fadeIn 0.3s ease;
+       
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Tic-Tac-Toe</h1>
+
+        <div class="game">
+            <div class="board">
+                <div class="cell" onclick="handleCellClick(0)"></div>
+                <div class="cell" onclick="handleCellClick(1)"></div>
+                <div class="cell" onclick="handleCellClick(2)"></div>
+                <div class="cell" onclick="handleCellClick(3)"></div>
+                <div class="cell" onclick="handleCellClick(4)"></div>
+                <div class="cell" onclick="handleCellClick(5)"></div>
+                <div class="cell" onclick="handleCellClick(6)"></div>
+                <div class="cell" onclick="handleCellClick(7)"></div>
+                <div class="cell" onclick="handleCellClick(8)"></div>
+            </div>
+
+            <div class="message">Enter player names and start the game</div>
+
+            <div class="player-names">
+                <input type="text" id="player1Name" placeholder="Player 1">
+                <input type="text" id="player2Name" placeholder="Player 2">
+                <button class="start-button" onclick="startGame()">Start Game</button>
+            </div>
+
+            <div class="game-over-overlay">
+                <div class="game-over-message"></div>
+                <button class="restart-button" onclick="restartGame()">Restart</button>
+            </div>
+        </div>
+
+        <script>
+            // Global variables
+            let currentPlayer = 'X';
+            let board = ['', '', '', '', '', '', '', '', ''];
+            let gameOver = false;
+
+            // Game elements
+            const cells = document.querySelectorAll('.cell');
+            const message = document.querySelector('.message');
+            const player1NameInput = document.getElementById('player1Name');
+            const player2NameInput = document.getElementById('player2Name');
+            const startButton = document.querySelector('.start-button');
+            const gameOverOverlay = document.querySelector('.game-over-overlay');
+            const gameOverMessage = document.querySelector('.game-over-message');
+            const restartButton = document.querySelector('.restart-button');
+
+            // Start the game
+            function startGame() {
+              const player1Name = player1NameInput.value || 'Player 1';
+              const player2Name = player2NameInput.value || 'Player 2';
+
+              message.textContent = `${player1Name}'s turn`;
+              player1NameInput.disabled = true;
+              player2NameInput.disabled = true;
+              startButton.disabled = true;
+              currentPlayer = 'X';
+              board = ['', '', '', '', '', '', '', '', ''];
+              gameOver = false;
+              cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('winner');
+              });
+            }
+
+            // Handle cell click
+            function handleCellClick(index) {
+              if (gameOver || board[index] !== '') return;
+
+              cells[index].textContent = currentPlayer;
+              board[index] = currentPlayer;
+
+              if (checkWin()) {
+                gameOver = true;
+                cells.forEach(cell => cell.classList.add('winner'));
+                message.textContent = `${currentPlayer} wins!`;
+                showGameOverOverlay(`${currentPlayer} wins!`);
+                return;
+              }
+
+              if (board.every(cell => cell !== '')) {
+                gameOver = true;
+                message.textContent = 'It\'s a tie!';
+                showGameOverOverlay('It\'s a tie!');
+                return;
+              }
+
+              currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+              message.textContent = `${currentPlayer}'s turn`;
+            }
+
+            // Check for a win
+            function checkWin() {
+              const winCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6] // diagonals
+              ];
+
+              return winCombinations.some(combination => {
+                const [a, b, c] = combination;
+                return board[a] !== '' && board[a] === board[b] && board[a] === board[c];
+              });
+            }
+
+            // Show game over overlay
+            function showGameOverOverlay(messageText) {
+              gameOverMessage.textContent = messageText;
+              gameOverOverlay.style.display = 'flex';
+            }
+
+            // Restart the game
+            function restartGame() {
+              player1NameInput.disabled = false;
+              player2NameInput.disabled = false;
+              startButton.disabled = false;
+              gameOverOverlay.style.display = 'none';
+              currentPlayer = 'X';
+              board = ['', '', '', '', '', '', '', '', ''];
+              gameOver = false;
+              cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('winner');
+              });
+              message.textContent = 'Enter player names and start the game';
+            }
+        </script>
+    </div>
+</body>
+</html>
